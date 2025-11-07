@@ -1,7 +1,6 @@
 import uuid
 import qrcode
 
-
 class Pix:
 
     def __init__(self) -> None:

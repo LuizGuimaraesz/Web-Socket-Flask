@@ -1,6 +1,5 @@
 from repository.database import db
 
-
 class Payment(db.Model):
     # id, value, paid, bank_payment_id, qr_code, expiration_date
     id = db.Column(db.Integer, primary_key=True)
