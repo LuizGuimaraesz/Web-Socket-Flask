@@ -1,7 +1,8 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file, render_template
 from repository.database import db
 from db_models.payment import Payment
 from datetime import datetime, timedelta
+from payments.pix import Pix
 
 
 app = Flask(__name__)
@@ -21,7 +22,12 @@ def create_payment_pix():
 
     expiration_date = datetime.now() + timedelta(minutes=30)
 
-    new_payment = Payment(value=data['value'], expiration_date=expiration_date)
+    pix_obj = Pix()
+    data_payment_pix = pix_obj.create_payment()
+    bank_payment_id = data_payment_pix.get("bank_payment_id")
+    qr_code = data_payment_pix.get("qr_code_path")
+
+    new_payment = Payment(value=data['value'], bank_payment_id=bank_payment_id, qr_code=qr_code, expiration_date=expiration_date)
 
     db.session.add(new_payment)
     db.session.commit()
@@ -31,6 +37,10 @@ def create_payment_pix():
         "payment": new_payment.to_dict(),
         })
 
+@app.route("/payments/pix/qr_code/<file_name>", methods=["GET"])
+def get_image(file_name):
+    return send_file(f"static/img/{file_name}.png", mimetype="image/png")
+
 
 @app.route('/payments/pix/confirmation', methods=['POST'])
 def confirmation_pix():
@@ -39,7 +49,7 @@ def confirmation_pix():
 
 @app.route('/payments/pix/<int:payment_id>', methods=['GET'])
 def payment_pix_page(payment_id):
-    return 'pagamento pix'
+    return render_template("payment.html")
 
 
 if __name__ == '__main__':
