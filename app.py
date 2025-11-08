@@ -61,23 +61,22 @@ def confirmation_pix():
     
     payment.paid = True
     db.session.commit()
+    socketio.emit(f'payment-confirmed-{payment.id}')
     
     return jsonify({"message":"The payment has be confirmed!"})
 
 
 
-
-
-
-
-
-
-    return jsonify({"message": "The payment has been confirmed"})
-
-
 @app.route('/payments/pix/<int:payment_id>', methods=['GET'])
 def payment_pix_page(payment_id):
     payment = Payment.query.get(payment_id)
+
+    if payment.paid:
+        return render_template("confirmed_payment.html", 
+                               value=payment.value,
+                               id=payment.id)
+
+
 
     return render_template("payment.html", 
                             value=payment.value,
